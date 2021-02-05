@@ -10,7 +10,11 @@
         <div class="container">
             <div style="margin-bottom:20px">
                 <el-input v-model="select_word" placeholder="筛选车牌" class="handle-input mr10"></el-input>
-
+                <el-select placeholder="订单状态" v-model="lpOrderState" class="handle-input mr10">
+                    <el-option value="未付款">未付款</el-option>
+                    <el-option value="待支付">待支付</el-option>
+                    <el-option value="支付成功">支付成功</el-option>
+                </el-select>
                 <el-date-picker
                         v-model="valuetime"
                         type="date"
@@ -37,51 +41,49 @@
             >
                 <el-table-column type="selection" width="50" align="center" class-name="table"></el-table-column>
                 <el-table-column type="index" width="50" align="center" label="序号" class-name="table"></el-table-column>
-                <el-table-column prop="plate" label="车牌号" class-name="table"></el-table-column>
+                <el-table-column prop="lpLincensePlateIdCar" label="车牌号" class-name="table"></el-table-column>
                 <!--
                 <el-table-column prop="jcoType" label="类型" class-name="table"></el-table-column>
                 <el-table-column prop="jcoCarColor" label="颜色" class-name="table"></el-table-column>
                 <el-table-column prop="jcoCarType" label="车类型" class-name="table"></el-table-column>-->
-                <el-table-column prop="intime" label="进场时间" :formatter="dateFormatter"
-                                 class-name="table"></el-table-column>
-                <el-table-column prop="outtime" label="出场时间" :formatter="dateFormatterexpirationTime"
-                                 class-name="table"></el-table-column>
-                <el-table-column prop="parktime" label="停车时间" class-name="table"></el-table-column>
-                <el-table-column prop="actualTime" label="实际支付时间" class-name="table"></el-table-column>
-                <el-table-column prop="jcoParkingName" label="车场名称" class-name="table"></el-table-column>
-                <el-table-column prop="jcoAreaName" label="区域名称" class-name="table"></el-table-column>
-                <el-table-column prop="orderid" label="订单号" class-name="table"></el-table-column>
-                <el-table-column prop="createtime" label="创建时间" class-name="table"></el-table-column>
+                <el-table-column prop="lpInboundTime" label="进场时间" class-name="table"></el-table-column>
+                <el-table-column prop="lpDepartureTime" label="出场时间" class-name="table"></el-table-column>
+                <el-table-column prop="lpParkingOften" label="停车时间" class-name="table"></el-table-column>
+                <el-table-column prop="lpOrderState" label="订单状态" class-name="table"></el-table-column>
+                <el-table-column prop="lpParkingCost" label="停车费用" class-name="table"></el-table-column>
+                <el-table-column prop="lpParkingRealCost" label="实收费用" class-name="table"></el-table-column>
+                <el-table-column prop="lpOrderId" label="订单号" class-name="table"></el-table-column>
+                <el-table-column prop="lpCreateTime" label="创建时间" class-name="table"></el-table-column>
                 <!--
                 <el-table-column prop="jcoAgentName" label="代理商" class-name="table"></el-table-column>
                 <el-table-column prop="jcoParkingName" label="停车场" class-name="table"></el-table-column>
                 <el-table-column prop="jcoAreaName" label="区域名" class-name="table"></el-table-column>-->
                 <!--
                 <el-table-column prop="jcoCouponName" label="优惠券" class-name="table"></el-table-column>-->
-                <!--
                 <el-table-column label="操作" width="180" align="center" class-name="table">
-                  <template slot-scope="scope">
-                    <el-button
-                      type="text"
-                      icon="el-icon-edit"
-                      @click="handleEdit(scope.$index, scope.row)"
-                    >编辑</el-button>
-                    <el-button
-                      type="text"
-                      icon="el-icon-delete"
-                      class="red"
-                      @click="handleDelete(scope.$index, scope.row)"
-                    >删除</el-button>
-                  </template>
-                </el-table-column>-->
+                    <template slot-scope="scope">
+                        <el-button type="text" v-if="scope.row.paymentid!=null" icon="el-icon-back" class="red"
+                                   @click="handleRefund(scope.$index, scope.row)">退款
+                        </el-button>
+                        <!--                    <el-button type="text" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)">删除</el-button>-->
+                    </template>
+                </el-table-column>
             </el-table>
         </div>
+        <!-- 退款提示框 -->
+        <el-dialog title="提示" :visible.sync="delVisible" width="300px" center>
+            <div class="del-dialog-cnt">退款不可恢复，是否确定退款？</div>
+            <span slot="footer" class="dialog-footer">
+        <el-button @click="delVisible = false">取 消</el-button>
+        <el-button type="primary" @click="refundRow">确 定</el-button>
+      </span>
+        </el-dialog>
         <el-pagination
                 style="float:right"
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
                 :current-page="cur_page"
-                :page-sizes="[50, 100, 150, 200]"
+                :page-sizes="[10, 30, 50, 100]"
                 :page-size="pagesize"
                 layout="total, sizes, prev, pager, next, jumper"
                 :total="totalRecords">
@@ -105,7 +107,7 @@
                 valuetime: "",
                 tableData: [],
                 cur_page: 1,
-                pagesize: 50,
+                pagesize: 10,
                 totalRecords: 0,
                 totalPages: 0,
                 multipleSelection: [],
@@ -116,6 +118,7 @@
                 editVisible: false,
                 addVisible: false,
                 delVisible: false,
+                lpOrderState:"",
                 numberer: 0,
                 addForm: {
                     jcoId: '',
@@ -159,10 +162,6 @@
             this.valuetimeA = data;
             this.valuetime = data;
             this.getData();
-            // this.getAgent();
-            // this.getArea();
-            // this.getParking();
-            // this.getCoupon();
         },
         computed: {
             data() {
@@ -189,34 +188,8 @@
         methods: {
             //搜索
             search(value) {
-
-                var date = new Date(this.valuetime);
-                var year = date.getFullYear();
-                var month = date.getMonth() + 1;
-                var day = date.getDate();
-                if (month < 10) {
-                    month = "0" + month;
-                }
-                if (day < 10) {
-                    day = "0" + day;
-                }
-                var nowDate = year + "-" + month + "-" + day;
-                this.valuetime = nowDate;
-
-                var date = new Date(this.valuetimeA);
-                var year = date.getFullYear();
-                var month = date.getMonth() + 1;
-                var day = date.getDate();
-                if (month < 10) {
-                    month = "0" + month;
-                }
-                if (day < 10) {
-                    day = "0" + day;
-                }
-                var nowDateA = year + "-" + month + "-" + day;
-                this.valuetimeA = nowDateA;
-
-
+                this.valuetime = this.dateFormatString(new Date(this.valuetime));
+                this.valuetimeA = this.dateFormatString(new Date(this.valuetimeA));
                 this.numberer = 1;
                 if (value == 1) {
                     this.cur_page = 1;
@@ -225,7 +198,7 @@
                 var res = this;
                 // 搜索
                 this.$axios({
-                    url: this.GLOBAL._SERVER_API_ + "couponOrderManager/searchCouponOrder",
+                    url: this.GLOBAL._SERVER_API_ + "lincensePlate/searchLincensePlate",
                     method: "post",
                     data: {
                         keyWord: res.select_word,
@@ -233,7 +206,8 @@
                         pageSize: res.pagesize,
                         startTime: res.valuetime,
                         endTime: res.valuetimeA,
-                        parkingId: Number(localStorage.getItem("parkingId"))
+                        parkId: Number(localStorage.getItem("parkingId")),
+                        lpOrderState:res.lpOrderState
                     }
                 })
                     .then(function (response) {
@@ -261,23 +235,19 @@
                         res.$message.error("查询失败: " + error);
                         console.log(error);
                     });
-                this.getParking()
-                this.getArea()
 
             },
-            dateFormatterexpirationTime(row, column) {
-                let datetime = row.outtime;
-                if (datetime) {
-                    datetime = new Date(datetime);
-                    let y = datetime.getFullYear() + "-";
-                    let mon = datetime.getMonth() + 1 + "-";
-                    let d = datetime.getDate();
-                    var h = datetime.getHours() + ':';
-                    var m = datetime.getMinutes() + ':';
-                    var s = datetime.getSeconds();
-                    return y + mon + d + " " + h + m + s;
+            dateFormatString(date) {
+                var year = date.getFullYear();
+                var month = date.getMonth() + 1;
+                var day = date.getDate();
+                if (month < 10) {
+                    month = "0" + month;
                 }
-                return "";
+                if (day < 10) {
+                    day = "0" + day;
+                }
+                return year + "-" + month + "-" + day;
             },
             dateFormatter(row, column) {
                 let datetime = row.intime;
@@ -318,17 +288,11 @@
             getData() {
                 this.numberer = 0;
                 var res = this;
-                var dataTime = new Date()
-                console.log(dataTime)
-                var Y = dataTime.getFullYear() + '-';
-                var M = (dataTime.getMonth() + 1 < 10 ? '0' + (dataTime.getMonth() + 1) : dataTime.getMonth() + 1) + '-';
-                var D = dataTime.getDate();
-
-                var timeStart = Y + M + D;
-                var timeEnd = Y + M + D;
-                console.log(timeStart, timeEnd)
+                var dataTime = new Date();
+                var timeStart = this.dateFormatString(dataTime);
+                var timeEnd = this.dateFormatString(dataTime);
                 this.$axios({
-                    url: this.GLOBAL._SERVER_API_ + "couponOrderManager/searchCouponOrder",
+                    url: this.GLOBAL._SERVER_API_ + "lincensePlate/searchLincensePlate",
                     method: "post",
                     data: {
                         keyWord: res.select_word,
@@ -336,24 +300,12 @@
                         pageSize: res.pagesize,
                         startTime: timeStart,
                         endTime: timeEnd,
-                        shopId: Number(localStorage.getItem("shopid"))
+                        parkId: Number(localStorage.getItem("parkingId")),
+                        lpOrderState:res.lpOrderState
                     }
                 })
                     .then(function (response) {
                         if (response.data.status == 200) {
-                            console.log(response.data.data);
-                            for (var i = 0; i < response.data.data.rows.length; i++) {
-                                if (response.data.data.rows[i].createtime) {
-                                    var date = new Date(response.data.data.rows[i].createtime);//时间戳为10位需*1000，时间戳为13位的话不需乘1000
-                                    var Y = date.getFullYear() + '-';
-                                    var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
-                                    var D = date.getDate() + ' ';
-                                    var h = date.getHours() + ':';
-                                    var m = date.getMinutes() + ':';
-                                    var s = date.getSeconds();
-                                    response.data.data.rows[i].createtime = Y + M + D + " " + h + m + s;
-                                }
-                            }
                             res.tableData = response.data.data.rows;
                             res.totalRecords = response.data.data.records; //总条数
 
@@ -365,8 +317,44 @@
                         console.log(error);
                     });
             },
+            // 确定退款
+            refundRow() {
+                var res = this;
+                this.$axios({
+                    url: "http://yun.jinshipark.com:81/JinshiCouponOrder/deleteByPrimaryKey?id=" + res.id,
+                    method: "post",
+                    data: {id: res.id}
+                })
+                    .then(function (response) {
+                        if (response.status <= 200) {
+                            res.$message.success("删除成功");
+                            res.delVisible = false;
+                            if (res.tableData[res.idx].id === res.id) {
+                                res.tableData.splice(res.idx, 1);
+                            } else {
+                                for (let i = 0; i < res.tableData.length; i++) {
+                                    if (res.tableData[i].id === res.id) {
+                                        res.tableData.splice(i, 1);
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    })
+                    .catch(function (error) {
+                        res.$message.success("删除失败！");
+                        console.log(error);
+                    });
+            },
             handleSelectionChange(val) {
                 this.multipleSelection = val;
+            },
+            //退款功能
+            handleRefund(index, row) {
+                this.idx = index;
+                this.id = row.id;
+                console.log(row);
+                this.delVisible = true;
             }
         }
     };
