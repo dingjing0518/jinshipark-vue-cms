@@ -60,14 +60,14 @@
                 <el-table-column prop="jcoAreaName" label="区域名" class-name="table"></el-table-column>-->
                 <!--
                 <el-table-column prop="jcoCouponName" label="优惠券" class-name="table"></el-table-column>-->
-                <el-table-column label="操作" width="180" align="center" class-name="table">
-                    <template slot-scope="scope">
-                        <el-button type="text" v-if="scope.row.paymentid!=null" icon="el-icon-back" class="red"
-                                   @click="handleRefund(scope.$index, scope.row)">退款
-                        </el-button>
-                        <!--                    <el-button type="text" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)">删除</el-button>-->
-                    </template>
-                </el-table-column>
+<!--                <el-table-column label="操作" width="180" align="center" class-name="table">-->
+<!--                    <template slot-scope="scope">-->
+<!--                        <el-button type="text" v-if="scope.row.paymentid!=null" icon="el-icon-back" class="red"-->
+<!--                                   @click="handleRefund(scope.$index, scope.row)">退款-->
+<!--                        </el-button>-->
+<!--                        &lt;!&ndash;                    <el-button type="text" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)">删除</el-button>&ndash;&gt;-->
+<!--                    </template>-->
+<!--                </el-table-column>-->
             </el-table>
         </div>
         <!-- 退款提示框 -->

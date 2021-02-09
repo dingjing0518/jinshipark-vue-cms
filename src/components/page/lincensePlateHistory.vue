@@ -11,6 +11,7 @@
             <div style="margin-bottom:20px">
                 <el-input v-model="select_word" placeholder="筛选车牌" class="handle-input mr10"></el-input>
                 <el-select placeholder="订单状态" v-model="lpOrderState" class="handle-input mr10">
+                    <el-option value="请选择">请选择</el-option>
                     <el-option value="未付款">未付款</el-option>
                     <el-option value="待支付">待支付</el-option>
                     <el-option value="支付成功">支付成功</el-option>
@@ -54,9 +55,12 @@
                 <el-table-column prop="lpParkingRealCost" label="实收费用" class-name="table"></el-table-column>
                 <el-table-column prop="lpOrderId" label="订单号" class-name="table"></el-table-column>
                 <el-table-column prop="lpCreateTime" label="创建时间" class-name="table"></el-table-column>
+                <el-table-column prop="refundValue" label="退款状态" align="center" class-name="table"></el-table-column>
+                <el-table-column prop="refundmoney" label="退款金额" align="center" class-name="table"></el-table-column>
                 <el-table-column label="操作" width="180" align="center" class-name="table">
                     <template slot-scope="scope">
-                        <el-button type="text" v-if="scope.row.paymentid!=null" icon="el-icon-back" class="red"
+                        <el-button type="text" v-if="scope.row.paymentid!=null&&scope.row.refundstatus==0"
+                                   icon="el-icon-back" class="red"
                                    @click="handleRefund(scope.$index, scope.row)">退款
                         </el-button>
                     </template>
@@ -64,10 +68,32 @@
             </el-table>
         </div>
         <!-- 退款提示框 -->
-        <el-dialog title="提示" :visible.sync="delVisible" width="300px" center>
-            <div class="del-dialog-cnt">退款不可恢复，是否确定退款？</div>
+        <!--        <el-dialog title="提示" :visible.sync="delVisible" width="300px" center>-->
+        <!--            <div class="del-dialog-cnt">退款不可恢复，是否确定退款？</div>-->
+        <!--            <span slot="footer" class="dialog-footer">-->
+        <!--        <el-button @click="delVisible = false">取 消</el-button>-->
+        <!--        <el-button type="primary" @click="refundRow">确 定</el-button>-->
+        <!--      </span>-->
+        <!--        </el-dialog>-->
+        <!-- 退款提示框 -->
+        <el-dialog title="退款" :visible.sync="refundVisible" width="30%">
+            <el-form :model="refundForm" ref="refundForm" label-width="100px">
+                <el-form-item label="订单号" prop="lp_order_id">
+                    <el-input v-model="refundForm.lp_order_id" :disabled="true"></el-input>
+                </el-form-item>
+                <el-form-item label="车牌号" prop="lpLincensePlateIdCar">
+                    <el-input v-model="refundForm.lpLincensePlateIdCar" :disabled="true"></el-input>
+                </el-form-item>
+                <el-form-item label="实付金额" prop="lpParkingRealCost">
+                    <el-input v-model="refundForm.lpParkingRealCost" :disabled="true"></el-input>
+                </el-form-item>
+                <el-form-item label="退款金额" prop="refundCost">
+                    <el-input v-model="refundForm.refundCost" placeholder="退款金额不能大于实付金额"></el-input>
+                </el-form-item>
+                <span class="span_addserver" v-if="refundserver!=''">{{refundserver}}</span>
+            </el-form>
             <span slot="footer" class="dialog-footer">
-        <el-button @click="delVisible = false">取 消</el-button>
+        <el-button @click="refundVisible = false">取 消</el-button>
         <el-button type="primary" @click="refundRow">确 定</el-button>
       </span>
         </el-dialog>
@@ -110,9 +136,11 @@
                 is_search: false,
                 editVisible: false,
                 addVisible: false,
-                delVisible: false,
+                refundVisible: false,
                 lpOrderState: "",
                 numberer: 0,
+                lp_order_id: "",
+                refundserver: "",
                 addForm: {
                     jcoId: '',
                     jcoPlate: "",
@@ -143,6 +171,12 @@
                     jcoAreaName: "",
                     jcoCouponName: ""
                 },
+                refundForm: {
+                    lp_order_id: "",
+                    lpLincensePlateIdCar: "",
+                    lpParkingRealCost: "",
+                    refundCost: ""
+                },
                 options: [],
                 value: "",
                 carFormRules: {},
@@ -151,9 +185,9 @@
             };
         },
         created() {
-            var data = new Date()
-            this.valuetimeA = data
-            this.valuetime = data
+            var data = new Date();
+            this.valuetimeA = data;
+            this.valuetime = data;
             this.getData();
         },
         computed: {
@@ -181,7 +215,12 @@
         methods: {
             //搜索
             search(value) {
-
+                let lpOrderState;
+                if (this.lpOrderState === '请选择') {
+                    lpOrderState = '';
+                } else {
+                    lpOrderState = this.lpOrderState;
+                }
                 this.valuetime = this.dateFormatString(new Date(this.valuetime));
                 this.valuetimeA = this.dateFormatString(new Date(this.valuetimeA));
                 this.numberer = 1;
@@ -201,15 +240,23 @@
                         startTime: res.valuetime,
                         endTime: res.valuetimeA,
                         parkId: Number(localStorage.getItem("parkingId")),
-                        lpOrderState: res.lpOrderState
+                        lpOrderState: lpOrderState
                     }
                 })
                     .then(function (response) {
                         if (response.data.status === 200) {
                             console.log(response.data.data);
                             res.tableData = response.data.data.rows;
+                            for (let i = 0; i < res.tableData.length; i++) {
+                                if (res.tableData[i].refundstatus == 0) {
+                                    res.tableData[i].refundValue = "未退款"
+                                } else if (res.tableData[i].refundstatus == 1) {
+                                    res.tableData[i].refundValue = "已退款"
+                                } else if (res.tableData[i].refundstatus == 2) {
+                                    res.tableData[i].refundValue = "退款中"
+                                }
+                            }
                             res.totalRecords = response.data.data.records; //总条数
-
                         }
 
                     })
@@ -242,6 +289,12 @@
             },
             // 获取数据
             getData() {
+                let lpOrderState;
+                if (this.lpOrderState === '请选择') {
+                    lpOrderState = '';
+                } else {
+                    lpOrderState = this.lpOrderState;
+                }
                 this.numberer = 0;
                 var res = this;
                 var dataTime = new Date();
@@ -257,13 +310,22 @@
                         startTime: timeStart,
                         endTime: timeEnd,
                         parkId: Number(localStorage.getItem("parkingId")),
-                        lpOrderState: res.lpOrderState
+                        lpOrderState: lpOrderState
                     }
                 })
                     .then(function (response) {
                         if (response.data.status == 200) {
                             console.log(response.data.data);
                             res.tableData = response.data.data.rows;
+                            for (let i = 0; i < res.tableData.length; i++) {
+                                if (res.tableData[i].refundstatus == 0) {
+                                    res.tableData[i].refundValue = "未退款"
+                                } else if (res.tableData[i].refundstatus == 1) {
+                                    res.tableData[i].refundValue = "已退款"
+                                } else if (res.tableData[i].refundstatus == 2) {
+                                    res.tableData[i].refundValue = "退款中"
+                                }
+                            }
                             res.totalRecords = response.data.data.records; //总条数
 
                         }
@@ -279,30 +341,38 @@
             },
             // 确定退款
             refundRow() {
+                console.log(this.refundForm.lp_order_id);
+                console.log(this.refundForm.lpParkingRealCost);
+                console.log(this.refundForm.refundCost);
+                if (this.refundForm.refundCost === "" || this.refundForm.refundCost === undefined) {
+                    this.refundserver = "退款金额不能为空";
+                    return;
+                }
+                if (Number(this.refundForm.lpParkingRealCost) < Number(this.refundForm.refundCost)) {
+                    this.refundserver = "退款金额不能大于实付金额";
+                    return;
+                }
                 var res = this;
+                console.log(res);
                 this.$axios({
-                    url: "http://yun.jinshipark.com:81/JinshiCouponOrder/deleteByPrimaryKey?id=" + res.id,
+                    url: "http://hfzf.jinshipark.com/hfzf-api/adapay/refund",
                     method: "post",
-                    data: {id: res.id}
+                    data: {
+                        order_no: res.refundForm.lp_order_id,
+                        pay_amt: res.refundForm.refundCost
+                    }
                 })
                     .then(function (response) {
-                        if (response.status <= 200) {
-                            res.$message.success("删除成功");
-                            res.delVisible = false;
-                            if (res.tableData[res.idx].id === res.id) {
-                                res.tableData.splice(res.idx, 1);
-                            } else {
-                                for (let i = 0; i < res.tableData.length; i++) {
-                                    if (res.tableData[i].id === res.id) {
-                                        res.tableData.splice(i, 1);
-                                        return;
-                                    }
-                                }
-                            }
+                        if (response.data.status === 200) {
+                            res.$message.success("退款处理中");
+                        } else {
+                            res.$message.error("退款失败: " + response.data.msg);
                         }
+                        res.refundVisible = false;
+                        res.search(2);
                     })
                     .catch(function (error) {
-                        res.$message.success("删除失败！");
+                        // res.$message.success("退款失败！");
                         console.log(error);
                     });
             },
@@ -320,10 +390,15 @@
             },
             //退款功能
             handleRefund(index, row) {
-                this.idx = index;
-                this.id = row.id;
+                this.refundserver = "";
                 console.log(row);
-                this.delVisible = true;
+                this.refundVisible = true;
+                this.refundForm = {
+                    lp_order_id: row.lpOrderId,
+                    lpLincensePlateIdCar: row.lpLincensePlateIdCar,
+                    lpParkingRealCost: row.lpParkingRealCost,
+                    refundCost: ""
+                }
             }
         }
     };
@@ -332,6 +407,14 @@
 <style scoped>
     .handle-box {
         margin-bottom: 20px;
+    }
+
+    .span_addserver {
+        display: block;
+        position: relative;
+        left: 100px;
+        color: red;
+        font-size: 12px;
     }
 
     .handle-select {
