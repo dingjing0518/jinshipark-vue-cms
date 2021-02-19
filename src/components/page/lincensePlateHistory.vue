@@ -3,7 +3,7 @@
         <div class="crumbs">
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item>
-                    <i class="el-icon-lx-cascades"></i> 在场记录历史
+                    <i class="el-icon-lx-cascades"></i> 历史记录
                 </el-breadcrumb-item>
             </el-breadcrumb>
         </div>
@@ -18,15 +18,15 @@
                 </el-select>
                 <el-date-picker
                         v-model="valuetime"
-                        type="date"
-                        placeholder="选择日期">
+                        type="datetime"
+                        placeholder="选择日期" default-time="00:00:00">
                 </el-date-picker>
 
                 <el-date-picker
                         style="margin:0px 10px 0px 10px"
                         v-model="valuetimeA"
-                        type="date"
-                        placeholder="选择日期">
+                        type="datetime"
+                        placeholder="选择日期" default-time="23:59:59">
                 </el-date-picker>
 
 
@@ -185,9 +185,8 @@
             };
         },
         created() {
-            var data = new Date();
-            this.valuetimeA = data;
-            this.valuetime = data;
+            this.valuetime = this.startDateFormatString(new Date());
+            this.valuetimeA = this.endDateFormatString(new Date());
             this.getData();
         },
         computed: {
@@ -221,8 +220,8 @@
                 } else {
                     lpOrderState = this.lpOrderState;
                 }
-                this.valuetime = this.dateFormatString(new Date(this.valuetime));
-                this.valuetimeA = this.dateFormatString(new Date(this.valuetimeA));
+                this.valuetime = this.dateFormatterString(new Date(this.valuetime));
+                this.valuetimeA = this.dateFormatterString(new Date(this.valuetimeA));
                 this.numberer = 1;
                 if (value == 1) {
                     this.cur_page = 1;
@@ -297,9 +296,8 @@
                 }
                 this.numberer = 0;
                 var res = this;
-                var dataTime = new Date();
-                var timeStart = this.dateFormatString(dataTime);
-                var timeEnd = this.dateFormatString(dataTime);
+                var timeStart = this.startDateFormatString(new Date());
+                var timeEnd = this.endDateFormatString(new Date());
                 this.$axios({
                     url: this.GLOBAL._SERVER_API_ + "lincensePlateHistory/searchLincensePlateHistory",
                     method: "post",
@@ -376,7 +374,7 @@
                         console.log(error);
                     });
             },
-            dateFormatString(date) {
+            startDateFormatString(date) {
                 var year = date.getFullYear();
                 var month = date.getMonth() + 1;
                 var day = date.getDate();
@@ -386,7 +384,31 @@
                 if (day < 10) {
                     day = "0" + day;
                 }
-                return year + "-" + month + "-" + day;
+                return year + "-" + month + "-" + day +" 00:00:00";
+            },
+            endDateFormatString(date) {
+                var year = date.getFullYear();
+                var month = date.getMonth() + 1;
+                var day = date.getDate();
+                if (month < 10) {
+                    month = "0" + month;
+                }
+                if (day < 10) {
+                    day = "0" + day;
+                }
+                return year + "-" + month + "-" + day +" 23:59:59";
+            },
+            dateFormatterString(date) {
+                let y = date.getFullYear() + "-";
+                let mon = date.getMonth() + 1 + "-";
+                let d = date.getDate();
+                var h = date.getHours() + ':';
+                var m = date.getMinutes() + ':';
+                var s = date.getSeconds();
+                h = h < 10 ? "0" + h : h;
+                m = m < 10 ? "0" + m : m;
+                s = s < 10 ? "0" + s : s;
+                return y + mon + d + " " + h + m + s;
             },
             //退款功能
             handleRefund(index, row) {

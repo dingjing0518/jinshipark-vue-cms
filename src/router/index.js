@@ -33,7 +33,7 @@ export default new Router({
                 {
                     path: '/lincensePlateHistory',
                     component: resolve => require(['../components/page/lincensePlateHistory.vue'], resolve),
-                    meta: { title: '在场记录历史' }
+                    meta: { title: '历史记录' }
                 },
                 {
                     path: '/404',

@@ -17,15 +17,15 @@
                 </el-select>
                 <el-date-picker
                         v-model="valuetime"
-                        type="date"
-                        placeholder="选择日期">
+                        type="datetime"
+                        placeholder="选择日期" default-time="00:00:00">
                 </el-date-picker>
 
                 <el-date-picker
                         style="margin:0px 10px 0px 10px"
                         v-model="valuetimeA"
-                        type="date"
-                        placeholder="选择日期">
+                        type="datetime"
+                        placeholder="选择日期" default-time="23:59:59">
                 </el-date-picker>
 
 
@@ -158,9 +158,8 @@
             };
         },
         created() {
-            var data = new Date();
-            this.valuetimeA = data;
-            this.valuetime = data;
+            this.valuetime = this.startDateFormatString(new Date());
+            this.valuetimeA = this.endDateFormatString(new Date());
             this.getData();
         },
         computed: {
@@ -188,8 +187,8 @@
         methods: {
             //搜索
             search(value) {
-                this.valuetime = this.dateFormatString(new Date(this.valuetime));
-                this.valuetimeA = this.dateFormatString(new Date(this.valuetimeA));
+                this.valuetime = this.dateFormatterString(new Date(this.valuetime));
+                this.valuetimeA = this.dateFormatterString(new Date(this.valuetimeA));
                 this.numberer = 1;
                 if (value == 1) {
                     this.cur_page = 1;
@@ -212,19 +211,6 @@
                 })
                     .then(function (response) {
                         if (response.data.status === 200) {
-                            console.log(response.data.data);
-                            for (var i = 0; i < response.data.data.rows.length; i++) {
-                                if (response.data.data.rows[i].createtime) {
-                                    var date = new Date(response.data.data.rows[i].createtime);//时间戳为10位需*1000，时间戳为13位的话不需乘1000
-                                    var Y = date.getFullYear() + '-';
-                                    var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
-                                    var D = date.getDate() + ' ';
-                                    var h = date.getHours() + ':';
-                                    var m = date.getMinutes() + ':';
-                                    var s = date.getSeconds();
-                                    response.data.data.rows[i].createtime = Y + M + D + " " + h + m + s;
-                                }
-                            }
                             res.tableData = response.data.data.rows;
                             res.totalRecords = response.data.data.records; //总条数
 
@@ -237,7 +223,7 @@
                     });
 
             },
-            dateFormatString(date) {
+            startDateFormatString(date) {
                 var year = date.getFullYear();
                 var month = date.getMonth() + 1;
                 var day = date.getDate();
@@ -247,7 +233,31 @@
                 if (day < 10) {
                     day = "0" + day;
                 }
-                return year + "-" + month + "-" + day;
+                return year + "-" + month + "-" + day +" 00:00:00";
+            },
+            endDateFormatString(date) {
+                var year = date.getFullYear();
+                var month = date.getMonth() + 1;
+                var day = date.getDate();
+                if (month < 10) {
+                    month = "0" + month;
+                }
+                if (day < 10) {
+                    day = "0" + day;
+                }
+                return year + "-" + month + "-" + day +" 23:59:59";
+            },
+            dateFormatterString(date) {
+                let y = date.getFullYear() + "-";
+                let mon = date.getMonth() + 1 + "-";
+                let d = date.getDate();
+                var h = date.getHours() + ':';
+                var m = date.getMinutes() + ':';
+                var s = date.getSeconds();
+                h = h < 10 ? "0" + h : h;
+                m = m < 10 ? "0" + m : m;
+                s = s < 10 ? "0" + s : s;
+                return y + mon + d + " " + h + m + s;
             },
             dateFormatter(row, column) {
                 let datetime = row.intime;
@@ -288,9 +298,8 @@
             getData() {
                 this.numberer = 0;
                 var res = this;
-                var dataTime = new Date();
-                var timeStart = this.dateFormatString(dataTime);
-                var timeEnd = this.dateFormatString(dataTime);
+                var timeStart = this.startDateFormatString(new Date());
+                var timeEnd = this.endDateFormatString(new Date());
                 this.$axios({
                     url: this.GLOBAL._SERVER_API_ + "lincensePlate/searchLincensePlate",
                     method: "post",

@@ -56,7 +56,7 @@
                     {
                         icon: 'el-icon-lx-cascades',
                         index: 'lincensePlateHistory',
-                        title: '在场记录历史'
+                        title: '历史记录'
                     }
                 ]
             }

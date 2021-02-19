@@ -100,8 +100,13 @@
             userMessage(formName) {
                 var res = this;
                 this.$axios({
-                    url: this.GLOBAL._SERVER_API_ + 'user/login?loginName=' + res.ruleForm.loginName + '&password=' + md5(res.ruleForm.password).toUpperCase(),
-                    method: 'get'
+                    // url: this.GLOBAL._SERVER_API_ + 'user/login?loginName=' + res.ruleForm.loginName + '&password=' + md5(res.ruleForm.password).toUpperCase(),
+                    url: this.GLOBAL._SERVER_API_ + 'user/login',
+                    method: "post",
+                    data: {
+                        loginName: res.ruleForm.loginName,
+                        password: md5(res.ruleForm.password).toUpperCase()
+                    }
                 }).then(function (response) {
                     if (response.data.status == 200) {
                         localStorage.setItem('ms_loginName', res.ruleForm.loginName);
