@@ -54,6 +54,7 @@
                 <el-table-column prop="lpParkingCost" label="停车费用" class-name="table"></el-table-column>
                 <el-table-column prop="lpParkingRealCost" label="实收费用" class-name="table"></el-table-column>
                 <el-table-column prop="lpOrderId" label="订单号" class-name="table"></el-table-column>
+                <el-table-column prop="adaorderid" label="支付平台订单号" class-name="table"></el-table-column>
                 <el-table-column prop="lpCreateTime" label="创建时间" class-name="table"></el-table-column>
                 <el-table-column prop="refundValue" label="退款状态" align="center" class-name="table"></el-table-column>
                 <el-table-column prop="refundmoney" label="退款金额" align="center" class-name="table"></el-table-column>
