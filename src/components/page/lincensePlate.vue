@@ -60,14 +60,14 @@
                 <el-table-column prop="jcoAreaName" label="区域名" class-name="table"></el-table-column>-->
                 <!--
                 <el-table-column prop="jcoCouponName" label="优惠券" class-name="table"></el-table-column>-->
-<!--                <el-table-column label="操作" width="180" align="center" class-name="table">-->
-<!--                    <template slot-scope="scope">-->
-<!--                        <el-button type="text" v-if="scope.row.paymentid!=null" icon="el-icon-back" class="red"-->
-<!--                                   @click="handleRefund(scope.$index, scope.row)">退款-->
-<!--                        </el-button>-->
-<!--                        &lt;!&ndash;                    <el-button type="text" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)">删除</el-button>&ndash;&gt;-->
-<!--                    </template>-->
-<!--                </el-table-column>-->
+                <!--                <el-table-column label="操作" width="180" align="center" class-name="table">-->
+                <!--                    <template slot-scope="scope">-->
+                <!--                        <el-button type="text" v-if="scope.row.paymentid!=null" icon="el-icon-back" class="red"-->
+                <!--                                   @click="handleRefund(scope.$index, scope.row)">退款-->
+                <!--                        </el-button>-->
+                <!--                        &lt;!&ndash;                    <el-button type="text" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)">删除</el-button>&ndash;&gt;-->
+                <!--                    </template>-->
+                <!--                </el-table-column>-->
             </el-table>
         </div>
         <!-- 退款提示框 -->
@@ -118,7 +118,7 @@
                 editVisible: false,
                 addVisible: false,
                 delVisible: false,
-                lpOrderState:"",
+                lpOrderState: "",
                 numberer: 0,
                 addForm: {
                     jcoId: '',
@@ -206,7 +206,7 @@
                         startTime: res.valuetime,
                         endTime: res.valuetimeA,
                         parkId: Number(localStorage.getItem("parkingId")),
-                        lpOrderState:res.lpOrderState
+                        lpOrderState: res.lpOrderState
                     }
                 })
                     .then(function (response) {
@@ -233,7 +233,7 @@
                 if (day < 10) {
                     day = "0" + day;
                 }
-                return year + "-" + month + "-" + day +" 00:00:00";
+                return year + "-" + month + "-" + day + " 00:00:00";
             },
             endDateFormatString(date) {
                 var year = date.getFullYear();
@@ -245,19 +245,21 @@
                 if (day < 10) {
                     day = "0" + day;
                 }
-                return year + "-" + month + "-" + day +" 23:59:59";
+                return year + "-" + month + "-" + day + " 23:59:59";
             },
             dateFormatterString(date) {
-                let y = date.getFullYear() + "-";
-                let mon = date.getMonth() + 1 + "-";
+                let y = date.getFullYear();
+                let mon = date.getMonth() + 1;
                 let d = date.getDate();
-                var h = date.getHours() + ':';
-                var m = date.getMinutes() + ':';
+                let h = date.getHours();
+                var m = date.getMinutes();
                 var s = date.getSeconds();
+                mon = mon < 10 ? '0' + mon : mon;
+                d = d < 10 ? '0' + d : d;
                 h = h < 10 ? "0" + h : h;
                 m = m < 10 ? "0" + m : m;
                 s = s < 10 ? "0" + s : s;
-                return y + mon + d + " " + h + m + s;
+                return y + '-' + mon + '-' + d + " " + h + ':' + m + ':' + s;
             },
             dateFormatter(row, column) {
                 let datetime = row.intime;
@@ -310,7 +312,7 @@
                         startTime: timeStart,
                         endTime: timeEnd,
                         parkId: Number(localStorage.getItem("parkingId")),
-                        lpOrderState:res.lpOrderState
+                        lpOrderState: res.lpOrderState
                     }
                 })
                     .then(function (response) {
