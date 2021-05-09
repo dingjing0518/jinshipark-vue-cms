@@ -39,7 +39,7 @@
                                     <a href="https://github.com/lin-xin/vue-manage-system" target="_blank">
                                         <el-dropdown-item>项目仓库</el-dropdown-item>
                         </a>-->
-                        <el-dropdown-item divided command="loginoutt">修改密码</el-dropdown-item>
+                        <el-dropdown-item divided command="loginoutt" v-if="loginName!=='admin'&&loginName!=='guest'">修改密码</el-dropdown-item>
                         <el-dropdown-item divided command="loginout">退出登录</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>

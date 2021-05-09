@@ -57,6 +57,11 @@
                         icon: 'el-icon-lx-cascades',
                         index: 'lincensePlateHistory',
                         title: '历史记录'
+                    },
+                    {
+                        icon: 'el-icon-lx-cascades',
+                        index: 'financialSummary',
+                        title: '财务汇总'
                     }
                 ]
             }

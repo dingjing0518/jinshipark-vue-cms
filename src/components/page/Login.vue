@@ -3,7 +3,12 @@
         <div class="ms-login">
             <div class="ms-title">金石停车 商户管理后台</div>
             <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="0px" class="ms-content">
-                <el-form-item prop="loginName">
+                <el-form-item prop="parkId">
+                    <el-input v-model="ruleForm.parkId" placeholder="parkId" @blur="bur">
+                        <!-- <el-button slot="prepend" icon="el-icon-lx-people"></el-button> -->
+                    </el-input>
+                </el-form-item>
+                <el-form-item prop="">
                     <el-input v-model="ruleForm.loginName" placeholder="loginName" @blur="bur">
                         <!-- <el-button slot="prepend" icon="el-icon-lx-people"></el-button> -->
                     </el-input>
@@ -14,9 +19,13 @@
                         <!-- <el-button slot="prepend" icon="el-icon-lx-lock"></el-button> -->
                     </el-input>
                 </el-form-item>
-                <div class="login-btn">
-                    <el-button type="primary" @click="userMessage()">登录</el-button>
-                </div>
+
+                <template>
+                    <Verify :type="1" @success="success()" @error="error()"></Verify>
+                </template>
+<!--                <div class="login-btn">-->
+<!--                    <el-button type="primary" @click="userMessage()">登录</el-button>-->
+<!--                </div>-->
                 <div class="icon-div">
                     <p class="login-tips">
                         <el-checkbox v-model="checkeders"></el-checkbox>
@@ -31,9 +40,11 @@
             </el-form>
         </div>
     </div>
+
 </template>
 <script>
     import md5 from 'js-md5';
+    import Verify from 'vue2-verify';
 
     export default {
         data: function () {
@@ -42,10 +53,16 @@
                 checkeders: '',
                 applyGood: [],
                 ruleForm: {
+                    parkId: '',
                     loginName: '',
                     password: ''
                 },
                 rules: {
+                    parkId: [{
+                        required: true,
+                        message: '请输入车场名称',
+                        trigger: 'blur'
+                    }],
                     loginName: [{
                         required: true,
                         message: '请输入用户名',
@@ -71,11 +88,13 @@
             } else {
                 this.checked = false
             }
-            this.ruleForm.loginName = window.localStorage.getItem("checkedersid")
+            this.ruleForm.loginName = window.localStorage.getItem("checkedersid");
+            this.ruleForm.parkId = window.localStorage.getItem("parkingId");
             if (this.ruleForm.loginName != null) {
                 this.bur()
             }
         },
+        components: {Verify},
         methods: {
             bur() {
                 var flag = false;
@@ -85,7 +104,7 @@
                     return;
                 }
                 for (var i = 0; i < nde.length; i++) {
-                    if (this.ruleForm.loginName == nde[i].loginName) {
+                    if (this.ruleForm.parkId == nde[i].parkId && this.ruleForm.loginName == nde[i].loginName) {
                         this.ruleForm.password = nde[i].password;
                         this.checked = true;
                         this.checkeders = true;
@@ -104,6 +123,7 @@
                     url: this.GLOBAL._SERVER_API_ + 'user/login',
                     method: "post",
                     data: {
+                        parkId: res.ruleForm.parkId,
                         loginName: res.ruleForm.loginName,
                         password: md5(res.ruleForm.password).toUpperCase()
                     }
@@ -121,14 +141,15 @@
 
                                 res.applyGood = JSON.parse(window.localStorage.getItem('applyParams'));
                                 for (var i = 0; i < res.applyGood.length; i++) {
-                                    if (res.ruleForm.loginName === res.applyGood[i].loginName) {
+                                    if (res.ruleForm.parkId === res.applyGood[i].parkId && res.ruleForm.loginName === res.applyGood[i].loginName) {
                                         flag = true;
                                     }
                                 }
 
                             }
-                            if(!flag){
+                            if (!flag) {
                                 res.applyGood.push({
+                                    parkId: res.ruleForm.parkId,
                                     loginName: res.ruleForm.loginName,
                                     password: res.ruleForm.password,
                                 })
@@ -141,7 +162,7 @@
                         }
                         if (res.checkeders == true) {
                             localStorage.setItem('dd', true);
-                            localStorage.setItem('checkedersid', res.ruleForm.loginName)
+                            localStorage.setItem('checkedersid', res.ruleForm.loginName);
                         } else {
                             //没有记住用户名
                             localStorage.removeItem("dd");
@@ -154,6 +175,12 @@
                     res.$message.error('系统错误: ' + error);
                     console.log(error);
                 });
+            },
+            success(e){
+                this.userMessage();
+            },
+            error(e){
+                alert("验证码错误")
             }
         }
     }

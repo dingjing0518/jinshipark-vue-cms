@@ -36,6 +36,11 @@ export default new Router({
                     meta: { title: '历史记录' }
                 },
                 {
+                    path: '/financialSummary',
+                    component: resolve => require(['../components/page/financialSummary.vue'], resolve),
+                    meta: { title: '财务汇总' }
+                },
+                {
                     path: '/404',
                     component: resolve => require(['../components/page/404.vue'], resolve),
                     meta: { title: '404' }
