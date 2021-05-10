@@ -36,9 +36,24 @@ export default new Router({
                     meta: { title: '历史记录' }
                 },
                 {
-                    path: '/financialSummary',
-                    component: resolve => require(['../components/page/financialSummary.vue'], resolve),
-                    meta: { title: '财务汇总' }
+                    path: '/todaySummary',
+                    component: resolve => require(['../components/page/todaySummary.vue'], resolve),
+                    meta: { title: '当日汇总' }
+                },
+                {
+                    path: '/dailySummary',
+                    component: resolve => require(['../components/page/dailySummary.vue'], resolve),
+                    meta: { title: '每日汇总' }
+                },
+                {
+                    path: '/monthlySummary',
+                    component: resolve => require(['../components/page/monthlySummary.vue'], resolve),
+                    meta: { title: '每月汇总' }
+                },
+                {
+                    path: '/annuallySummary',
+                    component: resolve => require(['../components/page/annuallySummary.vue'], resolve),
+                    meta: { title: '每年汇总' }
                 },
                 {
                     path: '/404',

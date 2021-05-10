@@ -3,7 +3,7 @@
         <div class="crumbs">
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item>
-                    <i class="el-icon-lx-cascades"></i> 财务汇总
+                    <i class="el-icon-lx-cascades"></i> 每年汇总
                 </el-breadcrumb-item>
             </el-breadcrumb>
         </div>
@@ -11,15 +11,15 @@
             <div style="margin-bottom:20px">
                 <el-date-picker
                         v-model="valuetime"
-                        type="datetime"
-                        placeholder="选择日期" default-time="00:00:00">
+                        type="year"
+                        placeholder="选择年份" :picker-options="pickerBeginOption">
                 </el-date-picker>
 
                 <el-date-picker
                         style="margin:0px 10px 0px 10px"
                         v-model="valuetimeA"
-                        type="datetime"
-                        placeholder="选择日期" default-time="23:59:59">
+                        type="year"
+                        placeholder="选择年份"  :picker-options="pickerBeginOption">
                 </el-date-picker>
 
 
@@ -37,27 +37,6 @@
                 <el-table-column prop="refundMoney" label="退款金额" class-name="table"></el-table-column>
             </el-table>
         </div>
-        <el-dialog title="退款" :visible.sync="refundVisible" width="30%">
-            <el-form :model="refundForm" ref="refundForm" label-width="100px">
-                <el-form-item label="订单号" prop="lp_order_id">
-                    <el-input v-model="refundForm.lp_order_id" :disabled="true"></el-input>
-                </el-form-item>
-                <el-form-item label="车牌号" prop="lpLincensePlateIdCar">
-                    <el-input v-model="refundForm.lpLincensePlateIdCar" :disabled="true"></el-input>
-                </el-form-item>
-                <el-form-item label="实付金额" prop="lpParkingRealCost">
-                    <el-input v-model="refundForm.lpParkingRealCost" :disabled="true"></el-input>
-                </el-form-item>
-                <el-form-item label="退款金额" prop="refundCost">
-                    <el-input v-model="refundForm.refundCost" placeholder="退款金额不能大于实付金额"></el-input>
-                </el-form-item>
-                <span class="span_addserver" v-if="refundserver!=''">{{refundserver}}</span>
-            </el-form>
-            <span slot="footer" class="dialog-footer">
-        <el-button @click="refundVisible = false">取 消</el-button>
-        <el-button type="primary" @click="refundRow">确 定</el-button>
-      </span>
-        </el-dialog>
     </div>
 </template>
 
@@ -67,6 +46,11 @@
         data() {
             return {
                 coupon: [],
+                pickerBeginOption: {
+                    disabledDate: (time) => {
+                        return time.getTime() > new Date().getTime();
+                    }
+                }, // 日期设置对象
                 agent: [],
                 area: [],
                 parking: [],
@@ -134,8 +118,8 @@
             };
         },
         created() {
-            this.valuetime = this.startDateFormatString(new Date());
-            this.valuetimeA = this.endDateFormatString(new Date());
+            this.valuetime = this.initDateFormatString(new Date());
+            this.valuetimeA = this.initDateFormatString(new Date());
             this.getData();
         },
         computed: {
@@ -163,32 +147,34 @@
         methods: {
             //搜索
             search(value) {
-                this.valuetime = this.dateFormatterString(new Date(this.valuetime));
-                this.valuetimeA = this.dateFormatterString(new Date(this.valuetimeA));
+                let valuetime = this.dateFormatterString(new Date(this.valuetime));
+                let valuetimeA = this.dateFormatterString(new Date(this.valuetimeA));
                 this.numberer = 1;
                 this.is_search = true;
                 var res = this;
+                console.log(valuetime);
+                console.log(valuetimeA);
                 // 搜索
-                this.$axios({
-                    url: this.GLOBAL._SERVER_API_ + "financialSummary",
-                    method: "post",
-                    data: {
-                        startTime: res.valuetime,
-                        endTime: res.valuetimeA,
-                        parkId: Number(localStorage.getItem("parkingId"))
-                    }
-                })
-                    .then(function (response) {
-                        if (response.data.status === 200) {
-                            if (response.data.status == 200) {
-                                res.tableData = response.data.data;
-                            }
-                        }
-                    })
-                    .catch(function (error) {
-                        res.$message.error("查询失败: " + error);
-                        console.log(error);
-                    });
+                // this.$axios({
+                //     url: this.GLOBAL._SERVER_API_ + "todaySummary",
+                //     method: "post",
+                //     data: {
+                //         startTime: res.valuetime,
+                //         endTime: res.valuetimeA,
+                //         parkId: Number(localStorage.getItem("parkingId"))
+                //     }
+                // })
+                //     .then(function (response) {
+                //         if (response.data.status === 200) {
+                //             if (response.data.status == 200) {
+                //                 res.tableData = response.data.data;
+                //             }
+                //         }
+                //     })
+                //     .catch(function (error) {
+                //         res.$message.error("查询失败: " + error);
+                //         console.log(error);
+                //     });
 
             },
             //每页显示个数改变
@@ -215,70 +201,35 @@
             // 获取数据
             getData() {
                 this.numberer = 0;
-                var res = this;
-                var timeStart = this.startDateFormatString(new Date());
-                var timeEnd = this.endDateFormatString(new Date());
-                this.$axios({
-                    url: this.GLOBAL._SERVER_API_ + "financialSummary",
-                    method: "post",
-                    data: {
-                        startTime: timeStart,
-                        endTime: timeEnd,
-                        parkId: Number(localStorage.getItem("parkingId"))
-                    }
-                })
-                    .then(function (response) {
-                        if (response.data.status == 200) {
-                            res.tableData = response.data.data;
-                        }
-
-                    })
-                    .catch(function (error) {
-                        res.$message.error("查询失败: " + error);
-                        console.log(error);
-                    });
+                let res = this;
+                let timeStart = this.dateFormatterString(new Date());
+                let timeEnd = this.dateFormatterString(new Date());
+                console.log(timeStart);
+                console.log(timeEnd);
+                // this.$axios({
+                //     url: this.GLOBAL._SERVER_API_ + "todaySummary",
+                //     method: "post",
+                //     data: {
+                //         startTime: timeStart,
+                //         endTime: timeEnd,
+                //         parkId: Number(localStorage.getItem("parkingId"))
+                //     }
+                // })
+                //     .then(function (response) {
+                //         if (response.data.status == 200) {
+                //             res.tableData = response.data.data;
+                //         }
+                //
+                //     })
+                //     .catch(function (error) {
+                //         res.$message.error("查询失败: " + error);
+                //         console.log(error);
+                //     });
             },
             handleSelectionChange(val) {
                 this.multipleSelection = val;
             },
-            // 确定退款
-            refundRow() {
-                console.log(this.refundForm.lp_order_id);
-                console.log(this.refundForm.lpParkingRealCost);
-                console.log(this.refundForm.refundCost);
-                if (this.refundForm.refundCost === "" || this.refundForm.refundCost === undefined) {
-                    this.refundserver = "退款金额不能为空";
-                    return;
-                }
-                if (Number(this.refundForm.lpParkingRealCost) < Number(this.refundForm.refundCost)) {
-                    this.refundserver = "退款金额不能大于实付金额";
-                    return;
-                }
-                var res = this;
-                console.log(res);
-                this.$axios({
-                    url: "http://hfzf.jinshipark.com/hfzf-api/adapay/refund",
-                    method: "post",
-                    data: {
-                        order_no: res.refundForm.lp_order_id,
-                        pay_amt: res.refundForm.refundCost
-                    }
-                })
-                    .then(function (response) {
-                        if (response.data.status === 200) {
-                            res.$message.success("退款处理中");
-                        } else {
-                            res.$message.error("退款失败: " + response.data.msg);
-                        }
-                        res.refundVisible = false;
-                        res.search(2);
-                    })
-                    .catch(function (error) {
-                        // res.$message.success("退款失败！");
-                        console.log(error);
-                    });
-            },
-            startDateFormatString(date) {
+            initDateFormatString(date) {
                 var year = date.getFullYear();
                 var month = date.getMonth() + 1;
                 var day = date.getDate();
@@ -290,43 +241,9 @@
                 }
                 return year + "-" + month + "-" + day + " 00:00:00";
             },
-            endDateFormatString(date) {
-                var year = date.getFullYear();
-                var month = date.getMonth() + 1;
-                var day = date.getDate();
-                if (month < 10) {
-                    month = "0" + month;
-                }
-                if (day < 10) {
-                    day = "0" + day;
-                }
-                return year + "-" + month + "-" + day + " 23:59:59";
-            },
             dateFormatterString(date) {
                 let y = date.getFullYear();
-                let mon = date.getMonth() + 1;
-                let d = date.getDate();
-                let h = date.getHours();
-                var m = date.getMinutes();
-                var s = date.getSeconds();
-                mon = mon < 10 ? '0' + mon : mon;
-                d = d < 10 ? '0' + d : d;
-                h = h < 10 ? "0" + h : h;
-                m = m < 10 ? "0" + m : m;
-                s = s < 10 ? "0" + s : s;
-                return y + '-' + mon + '-' + d + " " + h + ':' + m + ':' + s;
-            },
-            //退款功能
-            handleRefund(index, row) {
-                this.refundserver = "";
-                console.log(row);
-                this.refundVisible = true;
-                this.refundForm = {
-                    lp_order_id: row.lpOrderId,
-                    lpLincensePlateIdCar: row.lpLincensePlateIdCar,
-                    lpParkingRealCost: row.lpParkingRealCost,
-                    refundCost: ""
-                }
+                return y;
             }
         }
     };

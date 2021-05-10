@@ -16,7 +16,7 @@
                                 </el-menu-item>
                             </el-submenu>
                             <el-menu-item v-else :index="subItem.index" :key="subItem.index">
-                                {{ subItem.title }}
+                                <i :class="subItem.icon"></i><span slot="title">{{ subItem.title }}</span>
                             </el-menu-item>
                         </template>
                     </el-submenu>
@@ -38,30 +38,42 @@
             return {
                 collapse: false,
                 items: [
-					// {
-					//     icon: 'el-icon-lx-cascades',
-					//     index: 'couponMessage',
-					//     title: '优惠券管理'
-					// },
-                    // {
-                    //     icon: 'el-icon-lx-cascades',
-                    //     index: 'couponCheck',
-                    //     title: '优惠券生成'
-                    // },
 					{
-					    icon: 'el-icon-lx-cascades',
+					    icon: 'el-icon-notebook-1',
 					    index: 'lincensePlate',
 					    title: '在场记录'
                     },
                     {
-                        icon: 'el-icon-lx-cascades',
+                        icon: 'el-icon-notebook-2',
                         index: 'lincensePlateHistory',
                         title: '历史记录'
                     },
                     {
-                        icon: 'el-icon-lx-cascades',
-                        index: 'financialSummary',
-                        title: '财务汇总'
+                        icon: 'el-icon-s-data',
+                        index: 'summary',
+                        title: '财务汇总',
+                        subs:[
+                            {
+                                icon: 'el-icon-s-marketing',
+                                index: 'todaySummary',
+                                title: '当日汇总'
+                            },
+                            {
+                                icon: 'el-icon-s-marketing',
+                                index: 'dailySummary',
+                                title: '每日汇总'
+                            },
+                            {
+                                icon: 'el-icon-s-marketing',
+                                index: 'monthlySummary',
+                                title: '每月汇总'
+                            },
+                            {
+                                icon: 'el-icon-s-marketing',
+                                index: 'annuallySummary',
+                                title: '每年汇总'
+                            }
+                        ]
                     }
                 ]
             }
