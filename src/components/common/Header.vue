@@ -148,7 +148,7 @@
                             method: "post",
                             data: {
                                 id: window.localStorage.getItem("userId"),
-                                password: md5(res.addForm.password)
+                                password: md5(res.addForm.password).toUpperCase()
                             }
                         })
                             .then(function (response) {
