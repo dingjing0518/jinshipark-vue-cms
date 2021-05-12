@@ -186,9 +186,7 @@
                 })
                     .then(function (response) {
                         if (response.data.status === 200) {
-                            if (response.data.status == 200) {
-                                res.tableData = response.data.data;
-                            }
+                            res.tableData = response.data.data;
                         }
                     })
                     .catch(function (error) {

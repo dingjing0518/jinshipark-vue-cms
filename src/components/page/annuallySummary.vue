@@ -31,12 +31,23 @@
                     border
                     class="table"
                     ref="multipleTable">
+                <el-table-column prop="date" label="日期" class-name="table"></el-table-column>
                 <el-table-column prop="carNum" label="车辆数" class-name="table"></el-table-column>
                 <el-table-column prop="parkingCost" label="应收金额" class-name="table"></el-table-column>
                 <el-table-column prop="realCost" label="实收金额" class-name="table"></el-table-column>
                 <el-table-column prop="refundMoney" label="退款金额" class-name="table"></el-table-column>
             </el-table>
         </div>
+        <el-pagination
+                style="float:right"
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+                :current-page="cur_page"
+                :page-sizes="[10, 30, 50, 100]"
+                :page-size="pagesize"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="totalRecords">
+        </el-pagination>
     </div>
 </template>
 
@@ -155,26 +166,33 @@
                 console.log(valuetime);
                 console.log(valuetimeA);
                 // 搜索
-                // this.$axios({
-                //     url: this.GLOBAL._SERVER_API_ + "todaySummary",
-                //     method: "post",
-                //     data: {
-                //         startTime: res.valuetime,
-                //         endTime: res.valuetimeA,
-                //         parkId: Number(localStorage.getItem("parkingId"))
-                //     }
-                // })
-                //     .then(function (response) {
-                //         if (response.data.status === 200) {
-                //             if (response.data.status == 200) {
-                //                 res.tableData = response.data.data;
-                //             }
-                //         }
-                //     })
-                //     .catch(function (error) {
-                //         res.$message.error("查询失败: " + error);
-                //         console.log(error);
-                //     });
+                this.$axios({
+                    url: this.GLOBAL._SERVER_API_ + "annuallySummary",
+                    method: "post",
+                    data: {
+                        pageNum: res.cur_page,
+                        pageSize: res.pagesize,
+                        startTime: valuetime,
+                        endTime: valuetimeA,
+                        parkId: Number(localStorage.getItem("parkingId"))
+                    }
+                })
+                    .then(function (response) {
+                        if (response.data.status === 200) {
+                            if (response.data.status == 200) {
+                                console.log(response.data.data);
+                                res.tableData = response.data.data.rows;
+                                for (let i = 0; i < res.tableData.length; i++) {
+                                    res.tableData[i].carNum=res.tableData[i].carNum.split(".")[0];
+                                }
+                                res.totalRecords = response.data.data.records; //总条数
+                            }
+                        }
+                    })
+                    .catch(function (error) {
+                        res.$message.error("查询失败: " + error);
+                        console.log(error);
+                    });
 
             },
             //每页显示个数改变
@@ -206,25 +224,32 @@
                 let timeEnd = this.dateFormatterString(new Date());
                 console.log(timeStart);
                 console.log(timeEnd);
-                // this.$axios({
-                //     url: this.GLOBAL._SERVER_API_ + "todaySummary",
-                //     method: "post",
-                //     data: {
-                //         startTime: timeStart,
-                //         endTime: timeEnd,
-                //         parkId: Number(localStorage.getItem("parkingId"))
-                //     }
-                // })
-                //     .then(function (response) {
-                //         if (response.data.status == 200) {
-                //             res.tableData = response.data.data;
-                //         }
-                //
-                //     })
-                //     .catch(function (error) {
-                //         res.$message.error("查询失败: " + error);
-                //         console.log(error);
-                //     });
+                this.$axios({
+                    url: this.GLOBAL._SERVER_API_ + "annuallySummary",
+                    method: "post",
+                    data: {
+                        pageNum: res.cur_page,
+                        pageSize: res.pagesize,
+                        startTime: timeStart,
+                        endTime: timeEnd,
+                        parkId: Number(localStorage.getItem("parkingId"))
+                    }
+                })
+                    .then(function (response) {
+                        if (response.data.status == 200) {
+                            console.log(response.data.data);
+                            res.tableData = response.data.data.rows;
+                            for (let i = 0; i < res.tableData.length; i++) {
+                                res.tableData[i].carNum=res.tableData[i].carNum.split(".")[0];
+                            }
+                            res.totalRecords = response.data.data.records; //总条数
+                        }
+
+                    })
+                    .catch(function (error) {
+                        res.$message.error("查询失败: " + error);
+                        console.log(error);
+                    });
             },
             handleSelectionChange(val) {
                 this.multipleSelection = val;
