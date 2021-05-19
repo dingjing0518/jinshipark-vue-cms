@@ -31,6 +31,8 @@
                     border
                     class="table"
                     ref="multipleTable">
+                <el-table-column type="selection" width="50" align="center" class-name="table"></el-table-column>
+                <el-table-column type="index" width="50" align="center" label="序号" class-name="table"></el-table-column>
                 <el-table-column prop="date" label="日期" class-name="table"></el-table-column>
                 <el-table-column prop="carNum" label="车辆数" class-name="table"></el-table-column>
                 <el-table-column prop="parkingCost" label="应收金额" class-name="table"></el-table-column>
