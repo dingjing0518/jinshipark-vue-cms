@@ -36,7 +36,12 @@
                 <el-table-column prop="carNum" label="车辆数" class-name="table"></el-table-column>
                 <el-table-column prop="parkingCost" label="应收金额" class-name="table"></el-table-column>
                 <el-table-column prop="realCost" label="实收金额" class-name="table"></el-table-column>
+                <el-table-column prop="scanPayMoney" label="扫码付费金额" class-name="table"></el-table-column>
+                <el-table-column prop="prePayMoney" label="预付费用金额" class-name="table"></el-table-column>
+                <el-table-column prop="manualMoney" label="人工收费金额" class-name="table"></el-table-column>
+                <el-table-column prop="serviceFee" label="支付手续费" class-name="table"></el-table-column>
                 <el-table-column prop="refundMoney" label="退款金额" class-name="table"></el-table-column>
+                <el-table-column prop="refundServiceFee" label="退款手续费" class-name="table"></el-table-column>
             </el-table>
         </div>
         <el-dialog title="退款" :visible.sync="refundVisible" width="30%">
